@@ -1,43 +1,32 @@
-.PHONY: all
-all: build
+#######################################################
+############## formats, lint, and tests ###############
+#######################################################
 
-.PHONY: install
-install:
-	@go get -u github.com/miguelmota/go-ethereum-hdwallet
+.PHONY: fmt
+fmt:
+	@echo "----------------------------------------------------------------"
+	@echo " ⚙️  Formatting code..."
+	@echo "----------------------------------------------------------------"
+	gofmt -s -w ./.
 
-.PHONY: build
-build:
-	@go build . -o bin/hdwallet
+.PHONY: lint
+lint: 
+	@echo "----------------------------------------------------------------"
+	@echo " ⚙️  Linting code..."
+	@echo "----------------------------------------------------------------"
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2
+	golangci-lint run ./... -E gofmt --config=.golangci.yaml 
+	go mod tidy
+	@echo "Linting complete!"
 
 .PHONY: test
 test:
-	@go test -v .
+	@echo "----------------------------------------------------------------"
+	@echo " ⚙️  Testign the code..."
+	@echo "----------------------------------------------------------------"
+	GOPRIVATE=${PRIVATE_REPOS} go test ./... -v 
+	@echo "Tests complete!"
 
-.PHONY: ensure
-ensure:
-	@dep ensure
-
-.PHONY: deps/fix
-deps/fix:
-	@cp -r "${GOPATH}/src/github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1" "vendor/github.com/ethereum/go-ethereum/crypto/secp256k1/"
-
-.PHONY: run/example/1
-run/example/1:
-	@go run example/derive.go
-
-.PHONY: run/example/2
-run/example/2:
-	@go run example/sign.go
-
-.PHONY: run/example/3
-run/example/3:
-	@go run example/seed.go
-
-.PHONY: run/example/4
-run/example/4:
-	@go run example/keys.go
-
-.PHONY: release
-release:
-	@rm -rf dist
-	@goreleaser
+.PHONE: build
+build:
+	@echo
